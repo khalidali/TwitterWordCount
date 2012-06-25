@@ -1,22 +1,28 @@
 require 'net/http'
 
+#TwitterWordFrequency.new("2", "BarakObama")
 
 class TwitterWordFrequency
 
-  attr_accessor :count, :user_id
+  attr_accessor :count, :screen_name
   
-  def initialize count, user_id
+  def initialize count, screen_name
     @count = count
-    @user_id = user_id
+    @screen_name = screen_name
   end
   
   def getTweets
     uri = URI "https://api.twitter.com/1/statuses/user_timeline.json"
-    params = {:count => @count, :user_id => @user_id}
+    params = {:count => @count, :screen_name => @screen_name, :trim_user => true}
     uri.query = URI.encode_www_form(params)
     
-    response = Net::HTTP.get_response(uri)
-    puts res.body if res.is_a? Net::HTTPSuccess
+    Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+      request = Net::HTTP::Get.new uri.request_uri
+
+      response = http.request request # Net::HTTPResponse object
+      puts response.body if response.is_a? Net::HTTPSuccess
+    end
+    
   end
   
 end
