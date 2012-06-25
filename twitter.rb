@@ -1,4 +1,5 @@
 require 'net/http'
+require 'json'
 
 #TwitterWordFrequency.new("2", "BarakObama")
 
@@ -20,10 +21,35 @@ class TwitterWordFrequency
       request = Net::HTTP::Get.new uri.request_uri
 
       response = http.request request # Net::HTTPResponse object
-      puts response.body if response.is_a? Net::HTTPSuccess
+      return response.body
     end
-    
   end
+  
+  def parseTweets
+    words = {}
+    tweets = JSON.parse(getTweets)
+    tweets.each do |tweet|
+      tweet["text"].downcase.split(" ").each do |word|
+        word = word.gsub(/\W/, "")
+        if(words.has_key? word)
+          words[word] += 1
+        elsif(word != "") 
+          words[word] = 1
+        end 
+      end
+    end
+    return words
+  end
+  
+  def words
+    
+  
+  
+  
+  end
+  
+  
+  
   
 end
 
