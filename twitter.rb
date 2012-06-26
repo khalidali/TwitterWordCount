@@ -1,30 +1,32 @@
 require 'net/http'
 require 'json'
 
-#TwitterWordFrequency.new("2", "BarackObama")
+# Example on how to use:
+# obama = TwitterWordFrequency.new("BarackObama", 1000)
+# obama.getWordCount
+#
+#
 
 class TwitterWordFrequency
 
-  attr_accessor :count, :screen_name
+  attr_accessor :screen_name, :count
   
-  def initialize count, screen_name
+  def initialize screen_name, count
     @count = count
     @screen_name = screen_name
   end
   
-  def getTweets max_id
+  def getTweets max_id, count
     uri = URI "https://api.twitter.com/1/statuses/user_timeline.json"
+    params = {:screen_name => @screen_name, :count => count, :trim_user => "true"}
     if max_id
-      params = {:screen_name => @screen_name, :count => "200", :trim_user => "true", :max_id => max_id}
-    else
-      params = {:screen_name => @screen_name, :count => "200", :trim_user => "true"}
+      params[:max_id] = max_id
     end
-    uri.query = URI.encode_www_form(params)
+    uri.query = URI.encode_www_form params
     
     Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
       request = Net::HTTP::Get.new uri.request_uri
-
-      response = http.request request # Net::HTTPResponse object
+      response = http.request request 
       return response.body
     end
   end
@@ -32,17 +34,18 @@ class TwitterWordFrequency
   def getWordCount
     @words = {}
     max_id = nil
-    count = 0
+    count = @count
     
-    while count < @count.to_i do
-      tweets = JSON.parse(getTweets max_id)
+    while count > 0 do
+      size = count<200? count : 200 
+      tweets = JSON.parse getTweets(max_id, size)
       tweets.each do |tweet|
         updateWordCount tweet["text"]
         max_id = tweet["id"]
       end
-      count += 200
+      count -= size
     end
-    return @words.sort_by { |word, count| count}
+    return @words.sort_by { |word, count| count}.reverse
   end
   
   private
@@ -57,5 +60,4 @@ class TwitterWordFrequency
       end
     end
   end  
-  
 end
