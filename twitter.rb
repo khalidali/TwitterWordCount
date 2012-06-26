@@ -1,13 +1,11 @@
 require 'net/http'
 require 'json'
 
-#TwitterWordFrequency.new("2", "BarakObama")
-
-COUNT = 10
+#TwitterWordFrequency.new("2", "BarackObama")
 
 class TwitterWordFrequency
 
-  attr_accessor :count, :screen_name, :words
+  attr_accessor :count, :screen_name
   
   def initialize count, screen_name
     @count = count
@@ -17,12 +15,11 @@ class TwitterWordFrequency
   def getTweets max_id
     uri = URI "https://api.twitter.com/1/statuses/user_timeline.json"
     if max_id
-      params = {:count => COUNT, :screen_name => @screen_name, :trim_user => true, :max_id => max_id}
+      params = {:screen_name => @screen_name, :count => "200", :trim_user => "true", :max_id => max_id}
     else
-      params = {:count => COUNT, :screen_name => @screen_name, :trim_user => true}
+      params = {:screen_name => @screen_name, :count => "200", :trim_user => "true"}
     end
     uri.query = URI.encode_www_form(params)
-    
     
     Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
       request = Net::HTTP::Get.new uri.request_uri
@@ -32,30 +29,33 @@ class TwitterWordFrequency
     end
   end
   
-  def getWordCount 
+  def getWordCount
     @words = {}
-    count = 0
     max_id = nil
+    count = 0
     
-    
-    while count < @count
-      
+    while count < @count.to_i do
       tweets = JSON.parse(getTweets max_id)
-      
       tweets.each do |tweet|
-        tweet["text"].downcase.split(" ").each do |word|
-          word = word.gsub(/\W/, "")
-          if(words.has_key? word)
-            words[word] += 1
-          elsif(word != "") 
-            words[word] = 1
-          end 
+        updateWordCount tweet["text"]
         max_id = tweet["id"]
-        end
       end
-      count += COUNT
+      count += 200
     end
-    return words.sort_by { |word, count| count}
+    return @words.sort_by { |word, count| count}
   end
+  
+  private
+  
+  def updateWordCount(string)
+    string.downcase.split(" ").each do |word|
+      entry = word.gsub(/\W/, "")
+      if(@words.has_key? entry)
+        @words[entry] += 1
+      elsif(entry != "") 
+        @words[entry] = 1
+      end
+    end
+  end  
+  
 end
-
