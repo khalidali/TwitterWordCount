@@ -4,8 +4,7 @@ require 'json'
 # Example on how to use:
 # obama = TwitterWordCount.new("BarackObama", 1000)
 # obama.getWordCount
-#
-#
+
 
 class TwitterWordCount
 
@@ -19,9 +18,7 @@ class TwitterWordCount
   def getTweets max_id, count
     uri = URI "https://api.twitter.com/1/statuses/user_timeline.json"
     params = {:screen_name => @screen_name, :count => count, :trim_user => "true"}
-    if max_id
-      params[:max_id] = max_id
-    end
+    params[:max_id] = max_id unless max_id == nil
     uri.query = URI.encode_www_form params
     
     Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
