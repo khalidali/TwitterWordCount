@@ -2,12 +2,12 @@ require 'net/http'
 require 'json'
 
 # Example on how to use:
-# obama = TwitterWordFrequency.new("BarackObama", 1000)
+# obama = TwitterWordCount.new("BarackObama", 1000)
 # obama.getWordCount
 #
 #
 
-class TwitterWordFrequency
+class TwitterWordCount
 
   attr_accessor :screen_name, :count
   
